@@ -1,0 +1,188 @@
+/* Assay design system
+   Layout concept: an independent journal. Left-aligned serif headlines on an asymmetric grid,
+   a narrow reading column, quiet rules between sections, and one signature instrument (the
+   evidence rule). Glass is reserved for things that float above the page: the scrolled
+   header, search, the compare drawer, menus. Reading surfaces stay solid and high contrast. */
+:root {
+  /* Colour */
+  --paper: #f5f2eb;       /* warm ivory page */
+  --stone: #eae6dc;       /* secondary ground */
+  --card: #fbf9f4;        /* raised solid surface */
+  --ink: #252720;         /* charcoal text */
+  --muted: #5d6055;       /* secondary text, 6:1 on paper */
+  --rule: #d8d2c4;        /* hairlines */
+  --rule-strong: #b9b2a2;
+  --forest: #66745b;      /* evidence fills, accents */
+  --forest-deep: #4b5742; /* green text on paper */
+  --clay: #b77c63;        /* evidence against */
+  --clay-deep: #8f543d;   /* terracotta text on paper */
+  --ev-weak: #a69f8e;     /* level 1-2 hatching */
+
+  /* Glass (floating surfaces only) */
+  --glass-bg: rgba(248, 245, 238, 0.78);
+  --glass-strong: rgba(250, 248, 243, 0.9);
+  --glass-edge: rgba(255, 255, 255, 0.65);
+  --glass-line: rgba(37, 39, 32, 0.1);
+  --scrim: rgba(37, 39, 32, 0.22);
+  --shadow-float: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 24px 60px -24px rgba(37, 39, 32, 0.35), 0 2px 8px -2px rgba(37, 39, 32, 0.08);
+  --shadow-soft: 0 10px 30px -18px rgba(37, 39, 32, 0.35);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 0.75, 0.2);
+  --dur-1: 140ms;  /* hover, press */
+  --dur-2: 240ms;  /* toggles, small panels */
+  --dur-3: 380ms;  /* overlays, drawers, accordions */
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #1a1b17; --stone: #23251f; --card: #202219; --ink: #ece8dd; --muted: #a9ab9e;
+    --rule: #34362e; --rule-strong: #4a4c42; --forest: #8c9c7e; --forest-deep: #b0bfa1; --clay: #c98f75; --clay-deep: #e0a68c;
+    --ev-weak: #4a4c42;
+    --glass-bg: rgba(30, 31, 26, 0.74); --glass-strong: rgba(32, 33, 28, 0.9); --glass-edge: rgba(255, 255, 255, 0.08);
+    --glass-line: rgba(236, 232, 221, 0.1); --scrim: rgba(0, 0, 0, 0.45);
+    --shadow-float: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 24px 60px -20px rgba(0, 0, 0, 0.7), 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+    --shadow-soft: 0 10px 30px -18px rgba(0, 0, 0, 0.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --paper: #1a1b17; --stone: #23251f; --card: #202219; --ink: #ece8dd; --muted: #a9ab9e;
+  --rule: #34362e; --rule-strong: #4a4c42; --forest: #8c9c7e; --forest-deep: #b0bfa1; --clay: #c98f75; --clay-deep: #e0a68c;
+  --ev-weak: #4a4c42;
+  --glass-bg: rgba(30, 31, 26, 0.74); --glass-strong: rgba(32, 33, 28, 0.9); --glass-edge: rgba(255, 255, 255, 0.08);
+  --glass-line: rgba(236, 232, 221, 0.1); --scrim: rgba(0, 0, 0, 0.45);
+  --shadow-float: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 24px 60px -20px rgba(0, 0, 0, 0.7), 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+  --shadow-soft: 0 10px 30px -18px rgba(0, 0, 0, 0.7);
+  color-scheme: dark;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+    z-index: 60; background: var(--paper);
+  }
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+  a { color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid var(--forest); outline-offset: 3px; border-radius: 3px; }
+  ::selection { background: color-mix(in srgb, var(--forest) 30%, transparent); }
+}
+
+@layer components {
+  /* Grids default to one shrinkable column, so long content never widens the page on phones. */
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .gutter {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { @apply mx-auto w-full max-w-page; }
+
+  /* ---- Type scale (1.25 ratio on a 16px base; display sizes fluid) ---- */
+  .display { font-family: Newsreader, 'Iowan Old Style', Georgia, serif; font-optical-sizing: auto; }
+  .t-hero { font-family: Newsreader, 'Iowan Old Style', Georgia, serif; font-weight: 500; font-size: clamp(2.9rem, 1.6rem + 5.6vw, 6rem); line-height: 0.96; letter-spacing: -0.025em; }
+  .t-title { font-family: Newsreader, 'Iowan Old Style', Georgia, serif; font-weight: 500; font-size: clamp(2.6rem, 1.8rem + 3.6vw, 4.75rem); line-height: 1; letter-spacing: -0.02em; }
+  .t-h2 { font-family: Newsreader, 'Iowan Old Style', Georgia, serif; font-weight: 500; font-size: clamp(1.9rem, 1.5rem + 1.6vw, 2.6rem); line-height: 1.08; letter-spacing: -0.012em; }
+  .t-h3 { font-family: Newsreader, 'Iowan Old Style', Georgia, serif; font-weight: 450; font-size: clamp(1.3rem, 1.15rem + 0.5vw, 1.55rem); line-height: 1.22; }
+  .t-lede { font-family: Newsreader, 'Iowan Old Style', Georgia, serif; font-style: italic; font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.8rem); line-height: 1.32; }
+  .t-body { font-size: 1rem; line-height: 1.65; }
+  .t-small { font-size: 0.875rem; line-height: 1.55; }
+  /* Section kicker: serif italic, the journal's voice. */
+  .kicker { font-family: Newsreader, 'Iowan Old Style', Georgia, serif; font-style: italic; font-size: 1.05rem; color: var(--forest-deep); }
+  /* Label: quiet sans for metadata. */
+  .eyebrow { font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.01em; color: var(--muted); }
+  /* Data: monospace, only for numbers, identifiers and measured values. */
+  .data { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: 0.78rem; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+
+  .link {
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor), linear-gradient(var(--rule-strong), var(--rule-strong));
+    background-size: 0% 1px, 100% 1px; background-position: 0 100%, 0 100%; background-repeat: no-repeat;
+    transition: background-size var(--dur-2) var(--ease-out);
+    padding-bottom: 1px;
+  }
+  .link:hover, .link:focus-visible { background-size: 100% 1px, 100% 1px; }
+  .hair { border-color: var(--rule); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-3.5 text-sm;
+    min-height: 2.25rem;
+    border-color: var(--rule); color: var(--ink); background: transparent;
+    transition: border-color var(--dur-1), background-color var(--dur-1), color var(--dur-1), transform var(--dur-1) var(--ease-out);
+  }
+  .chip:hover { border-color: var(--ink); }
+  .chip:active { transform: scale(0.97); }
+  .chip[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  @media (pointer: coarse) { .chip { min-height: 44px; } }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border px-5 text-sm font-medium;
+    min-height: 44px; border-color: var(--ink); color: var(--ink);
+    transition: background-color var(--dur-1), color var(--dur-1), transform var(--dur-1) var(--ease-out);
+  }
+  .btn:hover { background: var(--ink); color: var(--paper); }
+  .btn:active { transform: scale(0.97); }
+  .btn-quiet { @apply inline-flex items-center gap-2 rounded-full px-3 text-sm; min-height: 40px; color: var(--muted); transition: color var(--dur-1), background-color var(--dur-1); }
+  .btn-quiet:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+
+  /* Glass: floating surfaces only. Solid fallback where backdrop-filter is unsupported. */
+  .glass {
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-line);
+    box-shadow: var(--shadow-float);
+  }
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass {
+      background: var(--glass-bg);
+      -webkit-backdrop-filter: blur(22px) saturate(1.4);
+      backdrop-filter: blur(22px) saturate(1.4);
+    }
+  }
+  .glass-edge { position: relative; }
+  .glass-edge::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(180deg, var(--glass-edge), transparent 40%);
+    mask: linear-gradient(#000, #000) content-box exclude, linear-gradient(#000, #000);
+    padding: 1px; -webkit-mask-composite: xor;
+  }
+
+  .kbd { @apply inline-flex items-center rounded border px-1.5 text-[0.7rem]; border-color: var(--rule-strong); color: var(--muted); font-family: 'IBM Plex Mono', ui-monospace, monospace; min-height: 1.35rem; }
+
+  .fade-in { animation: fade var(--dur-3) var(--ease-out) both; }
+  @keyframes fade { from { opacity: .4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* Page transitions (View Transitions API, progressive enhancement) */
+  ::view-transition-old(root) { animation: vt-out 160ms var(--ease-in) both; }
+  ::view-transition-new(root) { animation: vt-in 300ms var(--ease-out) both; }
+  @keyframes vt-out { to { opacity: 0; } }
+  @keyframes vt-in { from { opacity: 0; transform: translateY(8px); } }
+  ::view-transition-group(*) { animation-duration: 380ms; animation-timing-function: var(--ease-out); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in { animation: none; }
+    *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: 5.5rem; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+/* Section targets receive focus from the section nav; no ring on the whole section. */
+section[tabindex='-1']:focus { outline: none; }
